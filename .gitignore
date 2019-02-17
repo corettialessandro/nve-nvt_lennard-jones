@@ -1,0 +1,13 @@
+#Operative system files
+.DS_Store
+
+#Python temporary files
+*.pyc
+
+#Input/Output files
+*.b
+*.out
+*.xyz
+
+#Cache
+__pycache__/
