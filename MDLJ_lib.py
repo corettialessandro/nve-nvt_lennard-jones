@@ -35,23 +35,23 @@ class MDLJ_lib :
     rmax = Lr/2.5
     self.r2max = rmax * rmax
     self.ldel = rmax/self.kg
-    
+
   def clean_run(self, keepinput=False):
       from glob import glob
       from os import remove
-      
+
       if (keepinput):
           extlist = ['*.out', '*.xyz']
-      else:   
+      else:
           extlist = ['*.out', '*.xyz', '*.b']
       for ext in extlist:
-          filelist = glob(ext) 
-          for filename in filelist:  
+          filelist = glob(ext)
+          for filename in filelist:
               remove(filename)
       print("# cleaning previous run")
 
-  def read_input(self, N, conf_in='conf_in.b'): 
-      import pickle 
+  def read_input(self, N, conf_in='conf_in.b'):
+      import pickle
       with open(conf_in, 'rb') as ftrj:
          (Nr, t) = pickle.load(ftrj)
          self.t = t
@@ -60,13 +60,13 @@ class MDLJ_lib :
          ( self.rx, self.ry, self.rz, self.L ) = pickle.load( ftrj)
          ( self.px, self.py, self.pz, self.PL) = pickle.load( ftrj)
 
-  def write_input(self, N, t, conf_out='conf_in.b'): 
-      import pickle 
+  def write_input(self, N, t, conf_out='conf_in.b'):
+      import pickle
       with open(conf_out, 'wb') as ftrj:
           pickle.dump( (N, t) , ftrj, pickle.HIGHEST_PROTOCOL)
           pickle.dump( ( self.rx, self.ry, self.rz, self.L ), ftrj, pickle.HIGHEST_PROTOCOL)
           pickle.dump( ( self.px, self.py, self.pz, self.PL), ftrj, pickle.HIGHEST_PROTOCOL)
-         
+
   def fcc(self, m, verbose=False):
       from numpy import  random, rint
       print( "# number of lattice cells m^3 = %d" % (m**3) )
@@ -87,7 +87,7 @@ class MDLJ_lib :
           for ny in range(m) :
              for nz in range(m) :
                  self.rx[j] = xi + a*nx + rrx[j]
-                 self.ry[j] = yi + a*ny + rry[j]             
+                 self.ry[j] = yi + a*ny + rry[j]
                  self.rz[j] = zi + a*nz + rrz[j]
                  if verbose: print( "  %d   %8.3f   %8.3f   %8.3f " % (j, self.rx[j], self.ry[j], self.rz[j]) )
                  # reduced box coordinates in [-0.5:0.5]^3
@@ -99,7 +99,7 @@ class MDLJ_lib :
                  self.rz[j]-= rint(self.rz[j])
                  j +=1
                  self.rx[j] = xi + a*nx + rrx[j] + 0.5*a
-                 self.ry[j] = yi + a*ny + rry[j] + 0.5*a     
+                 self.ry[j] = yi + a*ny + rry[j] + 0.5*a
                  self.rz[j] = zi + a*nz + rrz[j]
                  if verbose: print( "  %d   %8.3f   %8.3f   %8.3f " % (j, self.rx[j], self.ry[j], self.rz[j]) )
                  # reduced box coordinates in [-0.5:0.5]^3
@@ -111,7 +111,7 @@ class MDLJ_lib :
                  self.rz[j]-= rint(self.rz[j])
                  j +=1
                  self.rx[j] = xi + a*nx + rrx[j] + 0.5*a
-                 self.ry[j] = yi + a*ny + rry[j]             
+                 self.ry[j] = yi + a*ny + rry[j]
                  self.rz[j] = zi + a*nz + rrz[j] + 0.5*a
                  if verbose: print( "  %d   %8.3f   %8.3f   %8.3f " % (j, self.rx[j], self.ry[j], self.rz[j]) )
                  # reduced box coordinates in [-0.5:0.5]^3
@@ -122,8 +122,8 @@ class MDLJ_lib :
                  self.rz[j]/= self.L
                  self.rz[j]-= rint(self.rz[j])
                  j +=1
-                 self.rx[j] = xi + a*nx + rrx[j] 
-                 self.ry[j] = yi + a*ny + rry[j] + 0.5*a            
+                 self.rx[j] = xi + a*nx + rrx[j]
+                 self.ry[j] = yi + a*ny + rry[j] + 0.5*a
                  self.rz[j] = zi + a*nz + rrz[j] + 0.5*a
                  if verbose: print( "  %d   %8.3f   %8.3f    %8.3f " % (j, self.rx[j], self.ry[j], self.rz[j]) )
                  # reduced box coordinates in [-0.5:0.5]^3
@@ -136,7 +136,7 @@ class MDLJ_lib :
                  j +=1
 
       print( "# initial atom disposition built on fcc lattice")
-            
+
   def vel_verlet(self, N, nstep, dt, freq=1):
     from numpy import sum, rint
     from calcener import calcener
@@ -176,14 +176,14 @@ class MDLJ_lib :
     print (" %8.3f %9.4g %9.4g %9.4g %10.7f %7.2e %7.2e %7.2e %9.4g" % (self.t, enep/N, enek/N, virp, enep+enek, vcmx, vcmy, vcmz, self.itemp))
     for pas in range(nstep) :
         vcmx = 0.
-        vcmy = 0. 
-        vcmz = 0. 
+        vcmy = 0.
+        vcmz = 0.
         self.t += dt
         # advance one step
-        # momenta first 
+        # momenta first
         self.px += (self.fax+self.fdx)*dth
         self.py += (self.fay+self.fdy)*dth
-        self.pz += (self.faz+self.fdz)*dth        
+        self.pz += (self.faz+self.fdz)*dth
         # positions second
         self.rx += dtm*self.px
         self.ry += dtm*self.py
@@ -204,7 +204,7 @@ class MDLJ_lib :
         # momenta thrid
         self.px += (self.fax+self.fdx)*dth
         self.py += (self.fay+self.fdy)*dth
-        self.pz += (self.faz+self.fdz)*dth      
+        self.pz += (self.faz+self.fdz)*dth
         vcmx = sum(self.px)
         vcmy = sum(self.py)
         vcmz = sum(self.pz)
@@ -216,7 +216,7 @@ class MDLJ_lib :
         ektsq += enek*enek
         eptsq += enep*enep
         etsq += (enek+enep)*(enek+enep)
-        if (pas+1)%freq==0 : 
+        if (pas+1)%freq==0 :
            # compute g(R)
            self.calc_gdr( N )
            # compute and write out running averages (for example temperature)
@@ -261,7 +261,7 @@ class MDLJ_lib :
     self.fay/= self.L**12
     self.fdy/= self.L**6
     self.faz/= self.L**12
-    self.fdz/= self.L**6 
+    self.fdz/= self.L**6
     enh = G*kt*(.5*tausq*self.NHchi**2 + self.NHxi)
     enep = epa/self.L**12+epd/self.L**6
     virp = vira/self.L**12 + vird/self.L**6
@@ -280,11 +280,11 @@ class MDLJ_lib :
     print (" %8.3f %9.4g %9.4g %9.4g %9.4g %10.7f %10.7f %7.2e %7.2e %7.2e %9.4g %9.4g" % (self.t, enep/N, enek/N, virp, enh, enep+enek, enep+enek+enh, vcmx, vcmy, vcmz, self.itemp, self.itemp-kt) )
     for pas in range(nstep) :
         vcmx = 0.
-        vcmy = 0. 
-        vcmz = 0. 
+        vcmy = 0.
+        vcmz = 0.
         self.t += dt
         # advance one step
-        # Nose-Hoover coordinate first: 
+        # Nose-Hoover coordinate first:
         self.NHxi += dthh*self.NHchi
         # Nose-Hoover momentum second:
         self.NHchi += dth*fnh
@@ -296,7 +296,7 @@ class MDLJ_lib :
         f = (1 - s)/self.NHchi
         self.px = s*self.px + f*(self.fax+self.fdx)
         self.py = s*self.py + f*(self.fay+self.fdy)
-        self.pz = s*self.pz + f*(self.faz+self.fdz)     
+        self.pz = s*self.pz + f*(self.faz+self.fdz)
         # positions fifth
         self.rx += dtm*self.px
         self.ry += dtm*self.py
@@ -318,7 +318,7 @@ class MDLJ_lib :
  		#Scaling of momenta
         self.px = s*self.px + f*(self.fax+self.fdx)
         self.py = s*self.py + f*(self.fay+self.fdy)
-        self.pz = s*self.pz + f*(self.faz+self.fdz)     
+        self.pz = s*self.pz + f*(self.faz+self.fdz)
         vcmx = sum(self.px)
         vcmy = sum(self.py)
         vcmz = sum(self.pz)
@@ -335,14 +335,14 @@ class MDLJ_lib :
         # computing gdr and single step printout ...
         ekt  += enek
         ept  += enep
-        vir  += virp        
+        vir  += virp
         enht += enh
         ektsq += enek*enek
         eptsq += enep*enep
         etsq += (enek+enep)*(enek+enep)
         enhtsq += enh*enh
         enhttsq += (enek+enep+enh)*(enek+enep+enh)
-        if (pas+1)%freq==0 : 
+        if (pas+1)%freq==0 :
            # compute g(R)
            self.calc_gdr(N)
            # compute and write out running averages (for example temperature)
@@ -359,28 +359,28 @@ class MDLJ_lib :
     out_data.close()
     self.write_input(N, self.t, conf_out='conf_in.b')
     return (tt, ekt, ept, vir, enht, ektsq, eptsq, etsq, enhtsq, enhttsq)
-  
+
   def calc_temp(self, N):
     from numpy import sum
     g=3*N-3
     v2 = sum((self.px/self.L)**2 + (self.py/self.L)**2 + (self.pz/self.L)**2)
     return v2/g
- 
+
   def write_avg(self, est, AVG, sample, fout):
-      
+
       iAVG = (AVG*(sample-1) + est)/sample
-      
+
       with open(fout, 'a') as fp:
           fp.write("%d\t%.4e\t%.4e\n" % (sample, est, iAVG))
-          
+
       return iAVG
-          
+
   def write_xyz(self, N):
       from numpy import zeros, rint
       dx = zeros(N)
       dy = zeros(N)
       dz = zeros(N)
-      sig=3.4 # in Angstrom for argon   
+      sig=3.4 # in Angstrom for argon
       rout=open('trajectory.xyz','a')
       rout.write('  %d \n' % N )
       rout.write('\n')
@@ -396,8 +396,8 @@ class MDLJ_lib :
           dy[i] *= sig*self.L
           dz[i] *= sig*self.L
           rout.write('Ar   %12.5g   %12.5g   %12.5g\n' % (dx[i],dy[i],dz[i]) )
-      rout.close()      
-      
+      rout.close()
+
   def write_PStraj(self, N):
       from numpy import zeros, rint
       dx = zeros(N)
@@ -406,12 +406,12 @@ class MDLJ_lib :
       vx = zeros(N)
       vy = zeros(N)
       vz = zeros(N)
-#      sig=3.4 # in Angstrom for Argon  
+#      sig=3.4 # in Angstrom for Argon
 #      eps = 1.656778224E-21 # in J for Argon
 #      mass = 6.633521357E-26 # in kg for Argon
 #      vconv = sqrt(eps/mass)*1e-2 # in Angstrom/ps
       with open('PStraj.out','a') as rout:
-          for i in range(N):    
+          for i in range(N):
               dx[i] = self.rx[i]
               dy[i] = self.ry[i]
               dz[i] = self.rz[i]
@@ -425,7 +425,7 @@ class MDLJ_lib :
               vy[i] = self.py[i]/self.L#*vconv
               vz[i] = self.pz[i]/self.L#*vconv
               rout.write('%12.5g\t%12.5g\t%12.5g\t%12.5g\t%12.5g\t%12.5g\n' % (dx[i],dy[i],dz[i],vx[i],vy[i],vz[i]) )
- 
+
   def calc_gdr(self, N ):
     from numpy import sqrt, rint
     for k in range(N-1) :
@@ -448,64 +448,64 @@ class MDLJ_lib :
 
   def write_gdr(self, N, T, rho, gdr_out='gdr.out'):
       from numpy import zeros, pi, savetxt, column_stack
-      V = zeros(self.kg) 
+      V = zeros(self.kg)
       r = zeros(self.kg)
-      g = zeros(self.kg) 
+      g = zeros(self.kg)
       for lm in range(self.kg) :
-          V[lm] = 4./3.*pi*(self.ldel**3)*(3*lm*lm +3*lm + 1); 
+          V[lm] = 4./3.*pi*(self.ldel**3)*(3*lm*lm +3*lm + 1);
           g[lm] = self.gcount[lm]/(V[lm]*(N -1)*T*rho);
           r[lm] = (lm+0.5)*self.ldel
       gout = column_stack( (r, g) )
-      savetxt(gdr_out, gout , fmt=('%12.7g ','%12.7g'), header="    'r'     'g(r)'" )          
+      savetxt(gdr_out, gout , fmt=('%12.7g ','%12.7g'), header="    'r'     'g(r)'" )
 
   def calc_vcf(self, N, dt, freq, norm=False) :
       from numpy import sqrt, array, correlate, arange, mean, loadtxt, savetxt, c_, split, swapaxes, trapz
-      
+
       def correlation_FFT(x1, x2, norm=True, mean=False):
-              
+
         #computing the lenght of the vectors
         n1 = len(x1)
         n2 = len(x2)
-    
-        #checking if the vectors has the same lenght (MANDATORY)    
+
+        #checking if the vectors has the same lenght (MANDATORY)
         if (n1!=n2):
             print('different lenght vectors!')
             exit()
-    
-        #rename the variable    
+
+        #rename the variable
         n = n1
-    
+
         #statistical analysis on data
         var1 = x1.var()
         var2 = x2.var()
         xx1 = x1
         xx2 = x2
-    
+
         if mean==True:
             xx1 = x1 - x1.mean()
             xx2 = x2 - x2.mean()
-    
+
         #computing correlation
         result = correlate(xx1, xx2, mode="full")[-n:]
         result /= arange(n, 0, -1)
-    
+
         #normalizing the correlation function
         norm1 = sqrt(var1)
         norm2 = sqrt(var2)
-    
+
         if norm:
             result /= (norm1*norm2)
             return result
         else:
             return result
-            
-      vx, vy, vz = loadtxt('PStraj.out', usecols=(3,4,5), unpack=True) 
+
+      vx, vy, vz = loadtxt('PStraj.out', usecols=(3,4,5), unpack=True)
       if (len(vx)%N==0):
-          Nt = len(vx)/N
+          Nt = len(vx)//N
           t = arange(Nt)*dt*freq
       else:
           raise TypeError('Dimension of velocities is not an integer multiple of the number of particles')
-          
+
       vx, vy, vz = array(split(vx, Nt)), array(split(vy, Nt)), array(split(vz, Nt))
       vx, vy, vz = swapaxes(vx, 0, 1), swapaxes(vy, 0, 1), swapaxes(vz, 0, 1)
 
@@ -519,15 +519,15 @@ class MDLJ_lib :
       VCTyz = array([correlation_FFT(vy[i], vz[i], norm=norm) for i in range(N)])
       VCTzx = array([correlation_FFT(vz[i], vx[i], norm=norm) for i in range(N)])
       VCTzy = array([correlation_FFT(vz[i], vy[i], norm=norm) for i in range(N)])
-      
+
       VCT = array([[VCTxx, VCTxy, VCTxz], [VCTyx, VCTyy, VCTyz], [VCTzx, VCTzy, VCTzz]])
-        
+
       AvVCT = mean(VCT, axis=2)
-      
+
       VCF = mean([AvVCT[0][0],AvVCT[1][1],AvVCT[2][2]], axis=0)
-                                                    
+
       savetxt('vcf.out', c_[t, AvVCT[0][0], AvVCT[0][1], AvVCT[0][2], AvVCT[1][0], AvVCT[1][1], AvVCT[1][2], AvVCT[2][0], AvVCT[2][1], AvVCT[2][2]])
-      
+
       if not norm:
           D = array([trapz(VCF[:n+1], dx=freq*dt) for n in range(Nt)])
           savetxt('vcf_diff.out', c_[t, D])
@@ -537,61 +537,58 @@ class MDLJ_lib :
     from scipy.optimize import curve_fit
 
     def autocorr_FFT(x):
-  
+
        N=len(x)
        F = fft.fft(x, n=2*N)
        PSD = F * F.conjugate()
        res = fft.ifft(PSD)
        res= (res[:N]).real
        n=N*ones(N)-arange(0,N)
-    
+
        return res/n
 
     def msd_FFT(r):
 
       N=len(r)
-      D=square(r).sum(axis=1) 
-      D=append(D,0) 
+      D=square(r).sum(axis=1)
+      D=append(D,0)
       S2=sum([autocorr_FFT(r[:, i]) for i in range(r.shape[1])])
       Q=2*D.sum()
       S1=zeros(N)
-    
+
       for m in range(N):
         Q=Q-D[m-1]-D[N-m]
         S1[m]=Q/(N-m)
-  
+
       return S1-2*S2
-    
+
     def lin_fit(x, A, B):
-    
+
         return A + B*x
 
     def GetM(x, y):
-    
+
         in_par = [1, 1]
 
         par, pcov = curve_fit(lin_fit, x, y, in_par)
-    
+
         return par
 
-    rx, ry, rz = loadtxt('PStraj.out', usecols=(0,1,2), unpack=True) 
+    rx, ry, rz = loadtxt('PStraj.out', usecols=(0,1,2), unpack=True)
     if (len(rx)%N==0):
-        Nt = len(rx)/N
+        Nt = len(rx)//N
         t = arange(Nt)*dt*freq
     else:
         raise TypeError('Dimension of positions is not an integer multiple of the number of particles')
-    
+
     rx, ry, rz = array(split(rx, Nt)), array(split(ry, Nt)), array(split(rz, Nt))
     r = swapaxes(array([rx, ry, rz]), 0, 2)
-    
+
     MSD = mean(array([msd_FFT(r[i]) for i in range(N)]), axis=0)
-    
+
     tcut = t[:]
     MSDcut = MSD[:]
     D0, D = GetM(tcut, MSDcut)
     Dfit = D0 + D*t
     savetxt('msd.out', c_[t, MSD])
     savetxt('msd_diff.out', c_[t, Dfit, D/6.*ones(len(t))])
-        
-      
-      

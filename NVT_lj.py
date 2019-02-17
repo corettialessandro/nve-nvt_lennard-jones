@@ -3,25 +3,30 @@ def NH_mdlj(nstep=1000, rho=0.84, m=6, kt_targ=.684, tausq=.1, kt_init=.684, dt=
     Molecular Dynamics program for N interacting LJ-particles
     in a 3 dimensional space using reduced LJ units (mass,sigma,epsilon):
     Dynamics: canonical - single nose-hoover algorithm;
-    INPUT: 
-      initial configuration from file 'conf_in':
+    INPUT:
+      initial configuration from file 'conf_in' (binary):
       - 1st row:  x_1 y_1 z_1 (initial coordinates of 1st particle)
-      -  . . . 
+      -  . . .
       - Nth row   x_N y_N z_N (initial coordinates of Nth particle)
       - N+1th row:  px_1 py_1 pz_1 (initial momenta of 1st particle)
-      -  . . . 
-      - 2*Nth row   px_N py_N pz_N (initial coordinates of Nth particle)
-      if mode is even initial velocities are sampled from Maxwell Distribution 
-   OUTPUT:
-   - enep          total potential energy  E_p
-   - enek          total kinetic energy E_k
-   - vir_p         virial coefficient
-   - enh           contribution to energy from nose-hoover thermostat
-   - enet          total energy Ep+Ek (not constant for canonical dynamics)
-   - enht          total energy plus nose-hoover contribution (constant of motion for N-H algorithm)
-   - vcm(x,y,z)    center of mass momentum (constant of motion)
-   - inst_T        instantaneous kinetic temperature
-   - Delta_T       difference between inst and target temperatures
+      -  . . .
+      - 2*Nth row   px_N py_N pz_N (initial momenta of Nth particle)
+      if mode is 0 initial positions are sampled from FCC lattice and previous input/output files are removed
+      if mode is not 0 initial positions are read from configuration file
+      if mode is even initial velocities are extracted from Maxwell Distribution and previous output files are removed
+    OUTPUT:
+    - enep          total potential energy  E_p
+    - enek          total kinetic energy E_k
+    - vir_p         virial coefficient
+    - enh           contribution to energy from nose-hoover thermostat
+    - enet          total energy Ep+Ek (not constant for canonical dynamics)
+    - enht          total energy plus nose-hoover contribution (constant of motion for N-H algorithm)
+    - vcm(x,y,z)    center of mass momentum (constant of motion)
+    - inst_T        instantaneous kinetic temperature
+    - Delta_T       difference between inst and target temperatures
+    PLOT:
+    - RDF           Radial distribution function as a function of interparticle distance
+    - Temperature   Instantaneous, mean and target temperatures vs. timestep
     """
     from numpy import random, sqrt, sum
     from MDLJ_lib import MDLJ_lib
@@ -42,12 +47,12 @@ def NH_mdlj(nstep=1000, rho=0.84, m=6, kt_targ=.684, tausq=.1, kt_init=.684, dt=
         md.read_input(N, conf_in='conf_in.b')
         print("# initial configuration read from config file ")
     else :
-        # initial positions mode=0 from hexagonal lattice
+        # initial positions mode=0 from FCC lattice
         md.clean_run()
         md.fcc(m, verbose=False)
-        # initial velocities: realization of random gaussian process with zero mean 
-        # so that initial momentum is exactly zero at the initial time 
-        # this results in a stationary center of mass for the N particle system 
+        # initial velocities: realization of random gaussian process with zero mean
+        # so that initial momentum is exactly zero at the initial time
+        # this results in a stationary center of mass for the N particle system
     if mode%2 == 0:
         # if mode is even (re)samples initial velocities from gaussian
         md.clean_run(keepinput=True)
@@ -66,12 +71,11 @@ def NH_mdlj(nstep=1000, rho=0.84, m=6, kt_targ=.684, tausq=.1, kt_init=.684, dt=
         md.px *= md.L
         md.py *= md.L
         md.pz *= md.L
-        #intial call for temperature difference
         print("# initial momenta sampled from maxwellian at temperature %8.4f " % kt_init)
     print( "# starting with box side at initial time L(t=0) = %8.4f " % md.L )
     # ofstream eout("outmd.txt");
     tt, ekt, ept, vir, enht, ektsq, eptsq, etsq, enhtsq, enhttsq = md.nose_hoover(N, nstep, dt, kt_targ, tausq, freq)
-    DEiE = sqrt(etsq/nstep - ((ekt + ept)/nstep)**2)/abs((ekt+ept)/nstep) 
+    DEiE = sqrt(etsq/nstep - ((ekt + ept)/nstep)**2)/abs((ekt+ept)/nstep)
     DENHiENH = sqrt(enhttsq/nstep - ((ekt + ept + enht)/nstep)**2)/abs((ekt+ept+enht)/nstep)
     pres = (2*ekt + vir)/(3.*md.L**3)
     print( "# END OF THE RUN: Dumping average quantities")
@@ -84,7 +88,7 @@ def NH_mdlj(nstep=1000, rho=0.84, m=6, kt_targ=.684, tausq=.1, kt_init=.684, dt=
     print( "# average temperature       kT   = %10.5g" %(2.*ekt/(nstep*g)) )
     print( "# average total     energy relative fluctuations: DE/E       = %.4g" % DEiE)
     print( "# average total N-H energy relative fluctuations: DE_NH/E_NH = %.4g" % DENHiENH)
-    # gdr final printout - use actual value of density rho 
+    # gdr final printout - use actual value of density rho
     md.write_gdr( N, tt, rho, gdr_out )
 #   end of md - visualization of G(r)
     from matplotlib.pyplot import plot, show
@@ -96,4 +100,3 @@ def NH_mdlj(nstep=1000, rho=0.84, m=6, kt_targ=.684, tausq=.1, kt_init=.684, dt=
     t,itemp,avgtemp = loadtxt('temperature.out', unpack=True)
     plot(t,itemp,'r.',t,avgtemp,'b-',t,kt_targ*ones(size(t)),'g-')
     show()
-
